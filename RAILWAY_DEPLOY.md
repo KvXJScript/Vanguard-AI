@@ -1,179 +1,347 @@
 # Deploying Vanguard AI to Railway
 
-This guide walks you through deploying the full Vanguard AI application (frontend, backend, database, and AI scanning) to Railway from scratch.
+Complete guide to deploy the full Vanguard AI code intelligence platform (frontend, backend, PostgreSQL database, and Anthropic AI integration) to Railway.
+
+---
+
+## What Gets Deployed
+
+| Component | Description |
+|---|---|
+| **Frontend** | React SPA served as static files from the Express server |
+| **Backend** | Express.js API handling auth, GitHub scanning, AI analysis |
+| **Database** | PostgreSQL storing users, sessions, repos, scans, file analyses |
+| **AI Integration** | Anthropic Claude API for code analysis (requires your API key) |
+
+The application is packaged as a single Docker container. The Express server serves both the API and the frontend on one port.
 
 ---
 
 ## Prerequisites
 
-- A [Railway account](https://railway.app) (free tier available)
-- A [GitHub account](https://github.com) with this code pushed to a repository
-- An [Anthropic API key](https://console.anthropic.com/) for AI-powered code analysis
+Before you begin, make sure you have:
+
+1. **A Railway account** - Sign up at [railway.app](https://railway.app) (free trial available, then $5/month Hobby plan for persistent hosting)
+2. **A GitHub account** - Your code needs to be in a GitHub repository
+3. **An Anthropic API key** - Get one from [console.anthropic.com](https://console.anthropic.com/) (needed for AI code analysis)
+4. **Git installed** on your local machine (to push code)
 
 ---
 
 ## Step 1: Push Your Code to GitHub
 
-If you haven't already, push this project to a GitHub repository:
+If this code is not already in a GitHub repository, create one and push it:
 
 ```bash
+# Initialize git (skip if already a git repo)
 git init
+
+# Add all files
 git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+
+# Commit
+git commit -m "Initial commit - Vanguard AI"
+
+# Create repo on GitHub, then:
+git remote add origin https://github.com/YOUR_USERNAME/vanguard-ai.git
+git branch -M main
 git push -u origin main
 ```
 
+**Important**: Make sure the following files are committed (they are required for deployment):
+- `Dockerfile`
+- `railway.toml`
+- `package.json` and `package-lock.json`
+- All source code in `client/`, `server/`, `shared/`, and `script/`
+
 ---
 
-## Step 2: Create a New Project on Railway
+## Step 2: Create a Railway Project
 
 1. Go to [railway.app](https://railway.app) and sign in
-2. Click **"New Project"**
+2. Click **"New Project"** in the top right
 3. Select **"Deploy from GitHub Repo"**
-4. Connect your GitHub account if you haven't already
-5. Select the repository you just pushed
+4. If prompted, authorize Railway to access your GitHub account
+5. Find and select the repository you pushed in Step 1
+6. Railway will detect the `Dockerfile` and begin the first build
 
-Railway will detect the `Dockerfile` and `railway.toml` automatically.
+> **Note**: The first deploy will likely fail because the database isn't set up yet. That's normal - we'll fix it in the next steps.
 
 ---
 
 ## Step 3: Add a PostgreSQL Database
 
-1. In your Railway project dashboard, click **"+ New"** (or the **"+"** button)
-2. Select **"Database"** → **"Add PostgreSQL"**
-3. Railway will create a PostgreSQL instance and automatically set the `DATABASE_URL` environment variable in your project
+Your app needs a PostgreSQL database to store user accounts, scan results, and session data.
 
-No additional configuration is needed — the app reads `DATABASE_URL` automatically.
+1. In your Railway project dashboard, click the **"+ New"** button (or **"+"** icon in the top right)
+2. Select **"Database"**
+3. Choose **"Add PostgreSQL"**
+4. Railway creates a PostgreSQL instance immediately
+
+Railway automatically creates a `DATABASE_URL` variable for the database service. You need to make this available to your web service:
+
+1. Click on your **web service** (the one connected to GitHub, not the database)
+2. Go to the **"Variables"** tab
+3. Click **"Add Variable"** > **"Add Reference"**
+4. Select the PostgreSQL service and choose `DATABASE_URL`
+
+This links the database connection string to your app.
 
 ---
 
-## Step 4: Set Environment Variables
+## Step 4: Set Required Environment Variables
 
-In your Railway project, click on your **web service** (not the database), then go to the **"Variables"** tab. Add these variables:
+Click on your **web service** (the one connected to GitHub), then go to the **"Variables"** tab. Click **"New Variable"** for each of the following:
 
-| Variable | Value | Required |
+### Required Variables
+
+| Variable | Value | How to Get It |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Your Anthropic API key from [console.anthropic.com](https://console.anthropic.com/) | Yes |
-| `SESSION_SECRET` | A random string (e.g., `openssl rand -hex 32` in your terminal) | Yes |
-| `NODE_ENV` | `production` | Yes |
+| `ANTHROPIC_API_KEY` | `sk-ant-...` | Go to [console.anthropic.com](https://console.anthropic.com/) > API Keys > Create Key |
+| `SESSION_SECRET` | A random 64-character string | Run `openssl rand -hex 32` in your terminal, or use any password generator |
+| `NODE_ENV` | `production` | Type exactly: `production` |
 
-**Important**: The `DATABASE_URL` variable is set automatically when you link the PostgreSQL database. You do not need to add it manually.
+### Automatically Set (Do NOT add manually)
 
----
+| Variable | Set By |
+|---|---|
+| `DATABASE_URL` | Linked from PostgreSQL service (Step 3) |
+| `PORT` | Railway sets this automatically |
 
-## Step 5: Link the Database to Your Service
-
-1. Click on your **PostgreSQL database** in the project dashboard
-2. Go to the **"Connect"** tab
-3. Under **"Available Variables"**, find `DATABASE_URL`
-4. Click **"Add Reference"** and select your web service
-
-This ensures your app can connect to the database.
+> **Security Note**: The `SESSION_SECRET` is used to encrypt user session cookies. Use a long, random string and never share it. If compromised, change it immediately (existing users will need to log in again).
 
 ---
 
-## Step 6: Initialize the Database
+## Step 5: Initialize the Database Tables
 
-The database tables need to be created on first deploy. Railway provides a one-time command runner:
+The database needs its tables created before the app can work. You have two options:
 
-1. Click on your **web service**
-2. Go to the **"Settings"** tab
-3. Under **"Deploy"**, find **"Custom Start Command"** — leave it as default (`node dist/index.cjs`)
-4. Open the **"Shell"** tab or use Railway CLI to run:
+### Option A: Using Railway's Shell (Recommended)
+
+1. Wait for a successful deploy to complete (the app may crash at startup, but the container is available)
+2. Click on your **web service** in Railway
+3. Click the **"Shell"** tab (or the terminal icon)
+4. In the shell, run:
 
 ```bash
 npx drizzle-kit push
 ```
 
-This creates all the tables (users, sessions, repositories, scans, file_analyses).
+5. When prompted, type `yes` to confirm creating the tables
+6. You should see output confirming these tables were created:
+   - `sessions` (for login sessions)
+   - `users` (for user accounts)
+   - `repositories` (for tracked GitHub repos)
+   - `scans` (for analysis runs)
+   - `file_analyses` (for per-file analysis results)
 
-**Alternative**: Use the Railway CLI locally:
+### Option B: Using Railway CLI (From Your Local Machine)
 
 ```bash
 # Install Railway CLI
 npm install -g @railway/cli
 
-# Login
+# Login to your Railway account
 railway login
 
-# Link to your project
+# Link to your project (follow the prompts to select your project and service)
 railway link
 
-# Run the migration
+# Run the database migration
 railway run npx drizzle-kit push
 ```
 
----
-
-## Step 7: Deploy
-
-After setting up environment variables and the database:
-
-1. Railway auto-deploys on every push to `main`
-2. You can also trigger a manual deploy from the Railway dashboard
-3. Wait for the build to complete (usually 2-3 minutes)
+After the tables are created, **redeploy** your service:
+1. Go to your web service in Railway
+2. Click **"Deployments"** tab
+3. Click **"Redeploy"** on the latest deployment (or push a new commit)
 
 ---
 
-## Step 8: Access Your App
+## Step 6: Generate a Public URL
 
-1. In your Railway project, click on your **web service**
-2. Go to **"Settings"** → **"Networking"**
-3. Click **"Generate Domain"** to get a public URL (e.g., `your-app.up.railway.app`)
-4. Visit the URL — your app is live!
+1. Click on your **web service** in Railway
+2. Go to **"Settings"** tab
+3. Scroll to **"Networking"** section
+4. Click **"Generate Domain"**
+5. Railway assigns a URL like `your-app-name.up.railway.app`
+6. Visit the URL in your browser - your app should be live!
 
 ---
 
-## Step 9: (Optional) Custom Domain
+## Step 7: Create Your Account and Start Using the App
 
-1. In **"Settings"** → **"Networking"** → **"Custom Domain"**
-2. Add your domain (e.g., `app.yourdomain.com`)
-3. Configure your DNS with the CNAME record Railway provides
-4. Railway handles SSL certificates automatically
+1. Visit your Railway URL
+2. You'll see the Vanguard AI landing page
+3. Click **"Get Started"** or go to `/login`
+4. Register a new account with your email and password
+5. Once logged in, add a public GitHub repository URL to analyze
+6. Click "Scan" to run AI-powered code analysis
+
+---
+
+## Optional: Custom Domain
+
+If you want to use your own domain (e.g., `app.yourdomain.com`):
+
+1. In your web service, go to **"Settings"** > **"Networking"**
+2. Click **"+ Custom Domain"**
+3. Enter your domain name
+4. Railway provides a CNAME record value
+5. In your DNS provider (Cloudflare, Namecheap, etc.), add a CNAME record:
+   - **Type**: CNAME
+   - **Name**: `app` (or whatever subdomain you chose)
+   - **Value**: The value Railway provided
+6. Wait for DNS propagation (usually 5-30 minutes)
+7. Railway automatically provisions an SSL certificate
+
+---
+
+## How It Works in Production
+
+### Architecture Overview
+
+```
+User's Browser
+    ↓ HTTPS
+Railway Domain (your-app.up.railway.app)
+    ↓
+Express Server (single container)
+    ├── Serves React SPA (static files from dist/public/)
+    ├── API Routes (/api/*)
+    │   ├── Auth: /api/auth/register, /api/auth/login, /api/auth/logout
+    │   ├── Repos: /api/repos (CRUD)
+    │   ├── Scans: /api/repos/:id/scans (create, list, get)
+    │   ├── Export: /api/scans/:id/export (HTML report)
+    │   ├── Stats: /api/stats (dashboard metrics)
+    │   └── Health: /api/health (uptime monitoring)
+    ├── Anthropic API (AI code analysis)
+    └── PostgreSQL Database (Railway-managed)
+```
+
+### Key Production Behaviors
+
+- **Secure cookies**: Sessions use `secure: true` and `httpOnly: true` over HTTPS
+- **Trust proxy**: Express trusts Railway's reverse proxy for correct IP/protocol detection
+- **Health checks**: Railway pings `/api/health` every 30 seconds to verify the app is running
+- **Auto-restart**: If the app crashes, Railway restarts it automatically (up to 3 retries)
+- **Zero-downtime deploys**: New deploys start a fresh container before stopping the old one
 
 ---
 
 ## Environment Variables Reference
 
-| Variable | Description | Default |
-|---|---|---|
-| `DATABASE_URL` | PostgreSQL connection string | Set by Railway |
-| `ANTHROPIC_API_KEY` | Anthropic API key for AI analysis | Required |
-| `SESSION_SECRET` | Secret for session encryption | Required in production |
-| `NODE_ENV` | Set to `production` | Required |
-| `PORT` | Server port | `3000` (set in Dockerfile) |
+| Variable | Required | Description | Example |
+|---|---|---|---|
+| `DATABASE_URL` | Yes (auto) | PostgreSQL connection string | `postgresql://user:pass@host:5432/db` |
+| `ANTHROPIC_API_KEY` | Yes | Anthropic API key for Claude AI | `sk-ant-api03-...` |
+| `SESSION_SECRET` | Yes | Secret for encrypting session cookies | `a1b2c3d4e5f6...` (64+ chars) |
+| `NODE_ENV` | Yes | Must be `production` | `production` |
+| `PORT` | Auto | Server port (Railway sets this) | `3000` |
+
+---
+
+## Updating Your App
+
+Every time you push to `main`, Railway automatically rebuilds and redeploys:
+
+```bash
+# Make your changes locally
+git add .
+git commit -m "Add new feature"
+git push origin main
+```
+
+Railway will:
+1. Detect the push
+2. Build a new Docker image (~2-3 minutes)
+3. Start the new container
+4. Switch traffic to the new container (zero downtime)
+5. Stop the old container
+
+You can also trigger a manual redeploy from the **"Deployments"** tab.
 
 ---
 
 ## Troubleshooting
 
-### "Database connection failed"
-- Make sure the PostgreSQL database is linked to your service (Step 5)
-- Check that `DATABASE_URL` appears in your service's Variables tab
+### App won't start / "Application failed to respond"
 
-### "AI analysis failed"
-- Verify `ANTHROPIC_API_KEY` is set correctly
-- Make sure your Anthropic account has available credits
+**Check the deploy logs:**
+1. Click your web service > **"Deployments"** tab
+2. Click the failed deployment
+3. Check the **"Build Logs"** and **"Deploy Logs"** tabs
 
-### "Login not working / cookies not persisting"
+**Common causes:**
+- `DATABASE_URL` not linked - Make sure the PostgreSQL variable reference is set (Step 3)
+- Database tables not created - Run `npx drizzle-kit push` (Step 5)
+- Missing environment variables - Verify all required vars are set (Step 4)
+
+### "Database connection failed" or "DATABASE_URL must be set"
+
+- Make sure you added a PostgreSQL database (Step 3)
+- Make sure the `DATABASE_URL` variable reference is added to your **web service** (not just the database service)
+- Click on your web service > Variables tab > confirm `DATABASE_URL` is listed
+
+### "AI analysis failed" or scans show all zeros
+
+- Verify `ANTHROPIC_API_KEY` is set correctly (no extra spaces, correct key)
+- Check your Anthropic account has available credits at [console.anthropic.com](https://console.anthropic.com/)
+- Check deploy logs for specific error messages from the Anthropic API
+
+### "Login not working" or "Session not persisting"
+
 - Ensure `NODE_ENV=production` is set
-- The app uses `trust proxy` and secure cookies in production, which requires HTTPS — Railway provides this by default
+- Make sure you're accessing the app via HTTPS (Railway domains use HTTPS by default)
+- The app uses secure cookies which require HTTPS to work
+- If you recently changed `SESSION_SECRET`, all existing sessions are invalidated - users need to log in again
 
-### "Build failed"
+### "Build failed" during deployment
+
 - Check the build logs in Railway for specific errors
-- Make sure all files are committed and pushed to GitHub
+- Make sure `package-lock.json` is committed (run `npm install` locally first)
+- Verify the `Dockerfile` is committed and matches the one in this repo
+- The build requires ~1GB of memory - Railway's Hobby plan provides enough
+
+### "Cannot find module" errors at runtime
+
+- Make sure `package.json` is committed with all dependencies listed
+- Check that the dependency is in `dependencies` (not just `devDependencies`) if it's needed at runtime
+- Redeploy after fixing
+
+### Health check failing
+
+- The app responds to `GET /api/health` with `{"status":"ok"}`
+- If health checks fail, the app isn't starting - check deploy logs
+- Railway allows 30 seconds for the health check; if the app takes longer to start, it will be marked as unhealthy
 
 ---
 
-## Updating the App
+## Cost Estimate
 
-Simply push new commits to your `main` branch on GitHub. Railway automatically rebuilds and redeploys.
+Railway pricing (as of 2025):
 
-```bash
-git add .
-git commit -m "Update feature"
-git push origin main
-```
+| Item | Cost |
+|---|---|
+| **Hobby Plan** | $5/month (required for persistent hosting) |
+| **Compute** | ~$0.000463/min (~$20/month for always-on) |
+| **PostgreSQL** | ~$0.000231/min (~$10/month) |
+| **Estimated Total** | ~$10-35/month depending on usage |
 
-Railway performs zero-downtime deployments by default.
+The free trial gives you $5 of credits to test with. For production use, the Hobby plan ($5/month) is required to keep your app running 24/7.
+
+Anthropic API costs are separate and depend on how many scans you run (~$0.01-0.05 per file analyzed).
+
+---
+
+## Files Included for Deployment
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | Multi-stage Docker build (builder + runner) |
+| `railway.toml` | Railway-specific deployment configuration |
+| `.dockerignore` | Files excluded from Docker build context |
+| `drizzle.config.ts` | Database migration configuration (copied into container) |
+| `shared/` | Database schema definitions (copied into container for migrations) |
+
+These files are all committed and ready to use. No additional configuration is needed beyond setting the environment variables described above.
