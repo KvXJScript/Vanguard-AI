@@ -25,7 +25,8 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   }
 
   if (!isAuthenticated) {
-    // Redirect logic is handled by useAuth or auth-utils often, but declarative redirect here is safe
+    // We'll let the effect in useAuth or the component handle it, 
+    // but a hard redirect is fine if we're sure
     window.location.href = "/api/login";
     return null;
   }
@@ -48,13 +49,13 @@ function Router() {
     <Switch>
       <Route path="/" component={isAuthenticated ? Dashboard : Landing} />
       <Route path="/repos">
-        {() => <ProtectedRoute component={Dashboard} />}
+        <ProtectedRoute component={Dashboard} />
       </Route>
       <Route path="/repo/:id">
-        {() => <ProtectedRoute component={RepoDetails} />}
+        <ProtectedRoute component={RepoDetails} />
       </Route>
       <Route path="/scan/:id">
-        {() => <ProtectedRoute component={ScanDetails} />}
+        <ProtectedRoute component={ScanDetails} />
       </Route>
       <Route component={NotFound} />
     </Switch>

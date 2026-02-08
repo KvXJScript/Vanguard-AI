@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { MetricCard } from "@/components/MetricCard";
 import { RadialBarChart, RadialBar, Legend, ResponsiveContainer, Tooltip } from "recharts";
 import { cn } from "@/lib/utils";
+import { Clock } from "lucide-react";
 
 export default function RepoDetails() {
   const [match, params] = useRoute("/repo/:id");
