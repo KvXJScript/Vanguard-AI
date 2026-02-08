@@ -1,4 +1,3 @@
-import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -15,7 +14,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
 import { useScrollAnimation } from "@/hooks/use-scroll-animation";
 
 function FAQItem({ question, answer }: { question: string; answer: string }) {
@@ -44,11 +42,8 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-export default function LandingPage() {
-  const { isAuthenticated } = useAuth();
-  const ctaHref = isAuthenticated ? "/dashboard" : "/login";
-  const ctaLabel = isAuthenticated ? "Go to Dashboard" : "Get Started Free";
-
+export default function GHPagesLandingPage() {
+  const APP_URL = import.meta.env.VITE_APP_URL || "#";
   useScrollAnimation();
 
   const features = [
@@ -130,34 +125,26 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col dark">
       <nav className="sticky top-0 z-[999] border-b border-border bg-background/80 backdrop-blur-lg">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5 animate-fade-in-down" data-testid="link-landing-brand">
+          <a href="#" className="flex items-center gap-2.5" data-testid="link-landing-brand">
             <div className="bg-primary/20 p-1.5 rounded-lg">
               <Code2 className="w-5 h-5 text-primary" />
             </div>
             <span className="font-bold text-lg tracking-tight" data-testid="text-landing-brand">
               Vanguard AI
             </span>
-          </Link>
-          <div className="flex items-center gap-3 flex-wrap animate-fade-in-down animation-delay-200">
-            {isAuthenticated ? (
-              <Link href="/dashboard">
-                <Button data-testid="button-landing-dashboard">Dashboard</Button>
-              </Link>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button variant="ghost" data-testid="button-landing-login">
-                    Log In
-                  </Button>
-                </Link>
-                <Link href="/login">
-                  <Button data-testid="button-landing-signup">Sign Up</Button>
-                </Link>
-              </>
-            )}
+          </a>
+          <div className="flex items-center gap-3 flex-wrap">
+            <a href={APP_URL}>
+              <Button variant="ghost" data-testid="button-landing-login">
+                Log In
+              </Button>
+            </a>
+            <a href={APP_URL}>
+              <Button data-testid="button-landing-signup">Sign Up</Button>
+            </a>
           </div>
         </div>
       </nav>
@@ -186,12 +173,12 @@ export default function LandingPage() {
             you clear scores, actionable insights, and AI-suggested fixes.
           </p>
           <div className="flex items-center justify-center gap-4 flex-wrap animate-fade-in-up animation-delay-400">
-            <Link href={ctaHref}>
+            <a href={APP_URL}>
               <Button size="lg" className="gap-2 text-base" data-testid="button-hero-cta">
-                {ctaLabel}
+                Get Started Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
-            </Link>
+            </a>
             <a href="#how-it-works">
               <Button variant="outline" size="lg" className="gap-2 text-base" data-testid="button-hero-learn">
                 How It Works
@@ -221,7 +208,7 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold mb-3 scroll-animate" data-testid="text-features-title">
               Everything you need to ship healthier code
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto scroll-animate" style={{ animationDelay: "100ms" }}>
+            <p className="text-muted-foreground max-w-xl mx-auto scroll-animate">
               One platform to analyze, track, and improve the quality of every
               repository you manage.
             </p>
@@ -252,7 +239,7 @@ export default function LandingPage() {
             <h2 className="text-3xl font-bold mb-3 scroll-animate" data-testid="text-how-title">
               How it works
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto scroll-animate" style={{ animationDelay: "100ms" }}>
+            <p className="text-muted-foreground max-w-xl mx-auto scroll-animate">
               Get from repository URL to actionable insights in three simple
               steps.
             </p>
@@ -270,13 +257,13 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-          <div className="text-center mt-12 scroll-animate" style={{ animationDelay: "300ms" }}>
-            <Link href={ctaHref}>
+          <div className="text-center mt-12 scroll-animate">
+            <a href={APP_URL}>
               <Button size="lg" className="gap-2" data-testid="button-how-cta">
-                {ctaLabel}
+                Get Started Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -284,10 +271,10 @@ export default function LandingPage() {
       <section className="py-20 border-t border-border" id="why">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold mb-3 scroll-animate" data-testid="text-why-title">
+            <h2 className="text-3xl font-bold mb-3 scroll-animate">
               Why teams choose Vanguard AI
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto scroll-animate" style={{ animationDelay: "100ms" }}>
+            <p className="text-muted-foreground max-w-xl mx-auto scroll-animate">
               Built for developers who care about code quality but don't have
               hours to spend reviewing every file.
             </p>
@@ -317,7 +304,7 @@ export default function LandingPage() {
               Frequently Asked Questions
             </h2>
           </div>
-          <div className="scroll-animate" style={{ animationDelay: "100ms" }}>
+          <div className="scroll-animate">
             {faqs.map((f) => (
               <FAQItem key={f.q} question={f.q} answer={f.a} />
             ))}
@@ -329,19 +316,19 @@ export default function LandingPage() {
         <div className="max-w-3xl mx-auto px-6 text-center">
           <div className="bg-primary/5 border border-primary/10 rounded-xl p-10 scroll-animate">
             <GitBranch className="w-10 h-10 text-primary mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-3" data-testid="text-cta-bottom-title">
+            <h2 className="text-2xl font-bold mb-3">
               Ready to improve your code health?
             </h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
               Connect your first repository and get a full analysis in under 15
               seconds. No credit card required.
             </p>
-            <Link href={ctaHref}>
+            <a href={APP_URL}>
               <Button size="lg" className="gap-2 text-base" data-testid="button-cta-bottom">
-                {ctaLabel}
+                Get Started Free
                 <ArrowRight className="w-4 h-4" />
               </Button>
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -367,9 +354,9 @@ export default function LandingPage() {
               <a href="#faq" className="hover:text-foreground transition-colors" data-testid="link-footer-faq">
                 FAQ
               </a>
-              <Link href="/login" className="hover:text-foreground transition-colors" data-testid="link-footer-login">
+              <a href={APP_URL} className="hover:text-foreground transition-colors" data-testid="link-footer-login">
                 Log In
-              </Link>
+              </a>
             </div>
           </div>
           <div className="mt-8 pt-6 border-t border-border text-center text-xs text-muted-foreground">

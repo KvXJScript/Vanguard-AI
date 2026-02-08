@@ -56,7 +56,22 @@ Creator/Brand: Vanguard AI (must appear in all branding, footers, and UI referen
 - `AI_INTEGRATIONS_ANTHROPIC_API_KEY` - Anthropic API key
 - `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` - Anthropic API base URL
 
+### GitHub Pages Deployment
+- **Static Build**: `npx vite build --config vite.config.gh-pages.ts` outputs to `docs/` directory
+- **Config**: `vite.config.gh-pages.ts` builds a standalone static version of the landing page (no backend dependency)
+- **Entry Point**: `client/gh-pages.html` → `client/src/gh-pages-main.tsx` → `GHPagesLandingPage.tsx`
+- **GitHub Actions**: `.github/workflows/gh-pages.yml` auto-deploys to GitHub Pages on push to main
+- **Environment**: Set `VITE_APP_URL` GitHub variable to point CTAs to the live app URL
+- **Output**: `docs/` contains `index.html`, `404.html`, `.nojekyll`, and bundled assets
+
 ## Recent Changes
+- Added GitHub Pages deployment support with separate Vite config, GitHub Actions workflow, and static landing page build
+- Added scroll-triggered animations (Intersection Observer) and entrance animations (fade-in-up, fade-in-down, float, glow) to landing page
+- Created useScrollAnimation hook for scroll-triggered element reveals
+- Added accessibility: prefers-reduced-motion media query disables all animations
+- Created comprehensive LandingPage with hero, features, how-it-works, FAQ, benefits, CTA, and footer
+- Updated routing: public landing page at /, protected dashboard at /dashboard, login at /login
+- AuthPage redirects to /dashboard after login/register
 - Rebranded from KvX to Vanguard AI throughout the entire application
 - Replaced Replit OIDC authentication with standalone email/password auth using bcrypt
 - Created AuthPage.tsx with tabbed login/register forms
