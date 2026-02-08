@@ -82,16 +82,24 @@ export function useDeleteRepo() {
 // === SCANS ===
 
 export function useRepoScans(repoId: number) {
-  return useQuery({
+  const result = useQuery({
     queryKey: [api.scans.list.path, repoId],
     queryFn: async () => {
-      const url = buildUrl(api.scans.list.path, { id: repoId }); // note: route param is :id, but logically it's repoId
+      const url = buildUrl(api.scans.list.path, { id: repoId });
       const res = await fetch(url, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch scans");
       return api.scans.list.responses[200].parse(await res.json());
     },
     enabled: !isNaN(repoId),
+    refetchInterval: (query) => {
+      const scans = query.state.data;
+      if (scans?.some((s: any) => s.status === "processing" || s.status === "pending")) {
+        return 3000;
+      }
+      return false;
+    },
   });
+  return result;
 }
 
 export function useScan(id: number) {
@@ -104,7 +112,14 @@ export function useScan(id: number) {
       if (!res.ok) throw new Error("Failed to fetch scan details");
       return api.scans.get.responses[200].parse(await res.json());
     },
-    enabled: !isNaN(id),
+    enabled: !isNaN(id) && id > 0,
+    refetchInterval: (query) => {
+      const data = query.state.data as any;
+      if (data?.scan?.status === "processing" || data?.scan?.status === "pending") {
+        return 3000;
+      }
+      return false;
+    },
   });
 }
 
@@ -121,12 +136,24 @@ export function useRunScan() {
     },
     onSuccess: (_, repoId) => {
       queryClient.invalidateQueries({ queryKey: [api.scans.list.path, repoId] });
-      // Invalidate repo list too if we show "last scan" status there
       queryClient.invalidateQueries({ queryKey: [api.repos.list.path] }); 
-      toast({ title: "Scan started", description: "Analysis is running in the background." });
+      toast({ title: "Scan started", description: "Analysis is running in the background. Results will appear automatically." });
     },
     onError: (error) => {
       toast({ title: "Scan failed", description: error.message, variant: "destructive" });
+    },
+  });
+}
+
+// === STATS ===
+
+export function useStats() {
+  return useQuery({
+    queryKey: ["/api/stats"],
+    queryFn: async () => {
+      const res = await fetch("/api/stats", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to fetch stats");
+      return res.json();
     },
   });
 }

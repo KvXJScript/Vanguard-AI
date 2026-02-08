@@ -20,7 +20,7 @@ const GITHUB_API_BASE = "https://api.github.com";
 export async function fetchRepoTree(owner: string, repo: string, branch = "main"): Promise<GitHubTreeItem[]> {
   // 1. Get the branch SHA to ensure we get the latest tree
   const branchRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/branches/${branch}`, {
-    headers: { "User-Agent": "KvX-Code-Intelligence" }
+    headers: { "User-Agent": "Vanguard-AI-Code-Intelligence" }
   });
   
   if (!branchRes.ok) {
@@ -32,7 +32,7 @@ export async function fetchRepoTree(owner: string, repo: string, branch = "main"
   const treeSha = branchData.commit.commit.tree.sha;
 
   const treeRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/git/trees/${treeSha}?recursive=1`, {
-    headers: { "User-Agent": "KvX-Code-Intelligence" }
+    headers: { "User-Agent": "Vanguard-AI-Code-Intelligence" }
   });
 
   if (!treeRes.ok) {
@@ -55,7 +55,7 @@ export async function fetchRepoTree(owner: string, repo: string, branch = "main"
 
 export async function fetchFileContent(url: string): Promise<string> {
   const res = await fetch(url, {
-    headers: { "User-Agent": "KvX-Code-Intelligence" }
+    headers: { "User-Agent": "Vanguard-AI-Code-Intelligence" }
   });
   
   if (!res.ok) {

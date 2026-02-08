@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
-import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integrations/auth";
+import { setupSession, registerAuthRoutes, isAuthenticated } from "./auth";
 import { fetchRepoTree, fetchFileContent } from "./lib/github";
 import { analyzeCode } from "./lib/ai";
 import { batchProcess } from "./replit_integrations/batch/utils";
@@ -13,8 +13,7 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Auth Setup
-  await setupAuth(app);
+  setupSession(app);
   registerAuthRoutes(app);
 
   // === REPOS ===
@@ -26,7 +25,7 @@ export async function registerRoutes(
       
       const owner = urlParts[0];
       const name = urlParts[1];
-      const userId = (req.user as any).claims.sub;
+      const userId = (req.session as any).userId;
 
       const repo = await storage.createRepository({
         userId,
@@ -46,7 +45,7 @@ export async function registerRoutes(
   });
 
   app.get(api.repos.list.path, isAuthenticated, async (req, res) => {
-    const userId = (req.user as any).claims.sub;
+    const userId = (req.session as any).userId;
     const repos = await storage.getRepositories(userId);
     res.json(repos);
   });
@@ -61,8 +60,7 @@ export async function registerRoutes(
     const repo = await storage.getRepository(Number(req.params.id));
     if (!repo) return res.status(404).json({ message: "Repo not found" });
     
-    // Check ownership
-    if (repo.userId !== (req.user as any).claims.sub) {
+    if (repo.userId !== (req.session as any).userId) {
         return res.status(401).json({ message: "Unauthorized" });
     }
 
@@ -76,7 +74,6 @@ export async function registerRoutes(
     const repo = await storage.getRepository(repoId);
     if (!repo) return res.status(404).json({ message: "Repo not found" });
 
-    // Create pending scan
     const scan = await storage.createScan({
       repoId,
       status: "processing",
@@ -87,24 +84,25 @@ export async function registerRoutes(
       summary: "Initializing scan..."
     });
 
-    res.status(201).json(scan); // Respond immediately, process in background
+    res.status(201).json(scan);
 
-    // Background Processing
     (async () => {
       try {
         console.log(`Starting scan for ${repo.owner}/${repo.name}`);
         
-        // 1. Fetch Files
         const tree = await fetchRepoTree(repo.owner, repo.name, repo.defaultBranch || "main");
-        // Limit to top 5 files for MVP/Demo to save tokens and time
-        const filesToAnalyze = tree.slice(0, 5); 
+        const filesToAnalyze = tree.slice(0, 10);
+
+        if (filesToAnalyze.length === 0) {
+          await storage.updateScanStatus(scan.id, "failed", "No relevant code files found in this repository.");
+          return;
+        }
 
         let totalDebt = 0;
         let totalSecurity = 0;
         let totalDoc = 0;
         const fileCount = filesToAnalyze.length;
 
-        // 2. Analyze Batch
         await batchProcess(filesToAnalyze, async (file) => {
             const content = await fetchFileContent(file.url);
             const analysis = await analyzeCode(content, file.path);
@@ -124,25 +122,21 @@ export async function registerRoutes(
                 originalCode: content,
                 refactoredCode: analysis.refactoredCode
             });
-        }, { concurrency: 2 }); // Process 2 files at a time
+        }, { concurrency: 2 });
 
-        // 3. Aggregate & Finish
-        if (fileCount > 0) {
-            const avgDebt = Math.round(totalDebt / fileCount);
-            const avgSec = Math.round(totalSecurity / fileCount);
-            const avgDoc = Math.round(totalDoc / fileCount);
-            const overall = Math.round((avgDebt + avgSec + avgDoc) / 3);
+        const avgDebt = Math.round(totalDebt / fileCount);
+        const avgSec = Math.round(totalSecurity / fileCount);
+        const avgDoc = Math.round(totalDoc / fileCount);
+        const overall = Math.round((avgDebt + avgSec + avgDoc) / 3);
 
-            await storage.updateScanStatus(scan.id, "completed", `Analyzed ${fileCount} files successfully.`, {
-                overall, technical: avgDebt, security: avgSec, doc: avgDoc
-            });
-            await storage.updateRepositoryLastScanned(repo.id);
-        } else {
-             await storage.updateScanStatus(scan.id, "failed", "No relevant code files found.");
-        }
+        await storage.updateScanStatus(scan.id, "completed", `Analyzed ${fileCount} files successfully.`, {
+            overall, technical: avgDebt, security: avgSec, doc: avgDoc
+        });
+        await storage.updateRepositoryLastScanned(repo.id);
+        console.log(`Scan ${scan.id} completed for ${repo.owner}/${repo.name}`);
       } catch (error: any) {
         console.error("Scan failed:", error);
-        await storage.updateScanStatus(scan.id, "failed", error.message);
+        await storage.updateScanStatus(scan.id, "failed", error.message || "Unknown error occurred during analysis.");
       }
     })();
   });
@@ -172,12 +166,59 @@ export async function registerRoutes(
       const html = generateGitHubPagesReport({ repo, scan, files });
 
       res.setHeader("Content-Type", "text/html");
-      res.setHeader("Content-Disposition", `attachment; filename="kvx-report-${repo.owner}-${repo.name}-scan-${scan.id}.html"`);
+      res.setHeader("Content-Disposition", `attachment; filename="vanguard-report-${repo.owner}-${repo.name}-scan-${scan.id}.html"`);
       res.send(html);
     } catch (error: any) {
       console.error("Export failed:", error);
       res.status(500).json({ message: "Failed to generate report" });
     }
+  });
+
+  // === STATS ===
+  app.get("/api/stats", isAuthenticated, async (req, res) => {
+    const userId = (req.session as any).userId;
+    const repos = await storage.getRepositories(userId);
+    
+    let totalScans = 0;
+    let completedScans = 0;
+    let avgOverall = 0;
+    let avgSecurity = 0;
+    let avgDebt = 0;
+    let totalIssues = 0;
+    
+    for (const repo of repos) {
+      const scans = await storage.getScans(repo.id);
+      totalScans += scans.length;
+      const completed = scans.filter(s => s.status === "completed");
+      completedScans += completed.length;
+      
+      for (const scan of completed) {
+        avgOverall += scan.overallScore || 0;
+        avgSecurity += scan.securityScore || 0;
+        avgDebt += scan.technicalDebtScore || 0;
+        
+        const files = await storage.getFileAnalyses(scan.id);
+        for (const file of files) {
+          totalIssues += (file.issues as any[])?.length || 0;
+        }
+      }
+    }
+    
+    if (completedScans > 0) {
+      avgOverall = Math.round(avgOverall / completedScans);
+      avgSecurity = Math.round(avgSecurity / completedScans);
+      avgDebt = Math.round(avgDebt / completedScans);
+    }
+    
+    res.json({
+      totalRepos: repos.length,
+      totalScans,
+      completedScans,
+      avgOverall,
+      avgSecurity,
+      avgDebt,
+      totalIssues,
+    });
   });
 
   return httpServer;

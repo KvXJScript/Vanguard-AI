@@ -11,7 +11,7 @@ export default function Landing() {
             <div className="bg-primary/20 p-2 rounded-lg">
               <Code2 className="w-6 h-6 text-primary" />
             </div>
-            <span className="text-xl font-bold tracking-tight" data-testid="text-brand">KvX</span>
+            <span className="text-xl font-bold tracking-tight" data-testid="text-brand">Vanguard AI</span>
           </div>
           <div className="flex items-center gap-4 flex-wrap">
             <Button asChild variant="ghost" className="hidden sm:inline-flex" data-testid="button-login">
@@ -33,7 +33,7 @@ export default function Landing() {
 
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
             <h1 className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 bg-gradient-to-br from-white via-white/90 to-white/50 bg-clip-text text-transparent" data-testid="text-hero-title">
-              Code Intelligence<br />by KvX
+              Code Intelligence<br />by Vanguard AI
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed" data-testid="text-hero-description">
               Multi-agent AI analysis for technical debt, security vulnerabilities, and documentation quality. Scan GitHub repositories and export standalone reports.
@@ -84,7 +84,7 @@ export default function Landing() {
               <FeatureCard 
                 icon={Code2}
                 title="Code Intelligence"
-                description="Deep analysis of code patterns, complexity metrics, and documentation coverage powered by KvX."
+                description="Deep analysis of code patterns, complexity metrics, and documentation coverage powered by Vanguard AI."
               />
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function Landing() {
 
       <footer className="border-t border-border py-12 bg-background">
         <div className="max-w-7xl mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p data-testid="text-footer">&copy; {new Date().getFullYear()} KvX. Code Intelligence Platform.</p>
+          <p data-testid="text-footer">&copy; {new Date().getFullYear()} Vanguard AI. Code Intelligence Platform.</p>
         </div>
       </footer>
     </div>
