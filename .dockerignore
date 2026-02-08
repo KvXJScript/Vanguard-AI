@@ -1,0 +1,12 @@
+node_modules
+dist
+docs
+.git
+.github
+.replit
+replit.nix
+replit.md
+*.md
+.env
+.env.*
+attached_assets
