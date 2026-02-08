@@ -62,7 +62,7 @@ function RepoCard({ repo }: { repo: any }) {
   
   return (
     <Link href={`/repo/${repo.id}`} className="block group" data-testid={`link-repo-${repo.id}`}>
-      <Card className="h-full p-6 border-white/5 bg-card/50 hover:bg-card hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 relative overflow-visible">
+      <Card className="h-full p-6 hover-elevate relative overflow-visible">
         <div className="flex justify-between items-start mb-4">
           <div className="p-2 bg-background rounded-lg border border-white/5">
             <GitBranch className="w-6 h-6 text-primary" />
@@ -84,7 +84,7 @@ function RepoCard({ repo }: { repo: any }) {
               ? `Scanned ${formatDistanceToNow(new Date(repo.lastScannedAt))} ago`
               : "Never scanned"}
           </div>
-          <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transform -translate-x-2 group-hover:translate-x-0 transition-all" />
+          <ArrowRight className="w-4 h-4 invisible group-hover:visible" />
         </div>
       </Card>
     </Link>

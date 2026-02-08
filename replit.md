@@ -56,7 +56,11 @@ Creator/Brand: KvX (must appear in all branding, footers, and UI references)
 
 ## Recent Changes
 - Rebranded from CodeRadar to KvX throughout the application
-- Added GitHub Pages standalone export feature
+- Added GitHub Pages standalone export feature with `/api/scans/:id/export` endpoint
+- Export buttons added to ScanDetails header and RepoDetails scan history rows
 - Enhanced landing page with 6 feature cards
 - Added SEO meta tags
 - Fixed emoji usage (replaced with Lucide icons)
+- Added comprehensive data-testid attributes to all interactive and dynamic elements
+- Replaced custom hover styles with hover-elevate utility classes per design guidelines
+- Dashboard cards, sidebar nav items, and scan history rows use proper interaction patterns

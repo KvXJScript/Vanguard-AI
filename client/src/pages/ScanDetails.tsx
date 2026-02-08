@@ -32,7 +32,7 @@ export default function ScanDetails() {
         {/* Header */}
         <header className="p-6 border-b border-border bg-card/30 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-4">
-            <Button asChild variant="ghost" size="icon" className="rounded-full">
+            <Button asChild variant="ghost" size="icon" data-testid="button-back-to-repo">
               <a href={`/repo/${scan.repoId}`}><ChevronLeft className="w-5 h-5" /></a>
             </Button>
             <div>

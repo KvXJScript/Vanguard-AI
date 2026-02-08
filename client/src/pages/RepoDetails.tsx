@@ -52,7 +52,7 @@ export default function RepoDetails() {
               <Badge variant="outline" className="text-xs font-mono">{repo.defaultBranch}</Badge>
             </div>
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <a href={repo.url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+              <a href={repo.url} target="_blank" rel="noreferrer" data-testid="link-github-repo" className="flex items-center gap-1.5 hover:text-primary transition-colors">
                 <Github className="w-4 h-4" /> {repo.owner}/{repo.name} <ExternalLink className="w-3 h-3" />
               </a>
               <span className="flex items-center gap-1.5">
@@ -61,10 +61,10 @@ export default function RepoDetails() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isDeleting}>
+            <Button variant="destructive" size="sm" onClick={handleDelete} disabled={isDeleting} data-testid="button-delete-repo">
               <Trash2 className="w-4 h-4 mr-2" /> Delete
             </Button>
-            <Button onClick={() => runScan(id)} disabled={isScanning} className="shadow-lg shadow-primary/25">
+            <Button onClick={() => runScan(id)} disabled={isScanning} data-testid="button-run-analysis">
               {isScanning ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2" />}
               Run Analysis
             </Button>
@@ -169,7 +169,7 @@ export default function RepoDetails() {
                 ) : (
                   <div className="space-y-4">
                     {scans?.map((scan) => (
-                      <div key={scan.id} className="flex items-center justify-between p-4 rounded-lg bg-background/50 border border-white/5 hover:border-primary/20 transition-all">
+                      <div key={scan.id} data-testid={`row-scan-${scan.id}`} className="flex items-center justify-between gap-4 p-4 rounded-lg bg-background/50 border border-white/5 hover-elevate">
                         <div className="flex items-center gap-4">
                            <div className={cn("w-2 h-2 rounded-full", scan.status === 'completed' ? 'bg-green-500' : 'bg-yellow-500')} />
                            <div>
@@ -185,7 +185,7 @@ export default function RepoDetails() {
                            <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); window.open(`/api/scans/${scan.id}/export`, "_blank"); }} data-testid={`button-export-scan-${scan.id}`}>
                              <Download className="w-4 h-4" />
                            </Button>
-                           <Button asChild size="sm" variant="ghost">
+                           <Button asChild size="sm" variant="ghost" data-testid={`button-scan-details-${scan.id}`}>
                              <a href={`/scan/${scan.id}`}>Details</a>
                            </Button>
                         </div>
