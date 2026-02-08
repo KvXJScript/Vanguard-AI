@@ -3,6 +3,38 @@
 ## Overview
 Vanguard AI is an enterprise-grade code intelligence platform that analyzes public GitHub repositories for code health using AI-powered multi-agent analysis. Users connect repositories, and the system scans source files to evaluate technical debt, security vulnerabilities, and documentation quality. Results are presented through visual dashboards with score rings, charts, and detailed file-level analysis with AI-suggested improvements. Reports can be exported as standalone HTML files.
 
+## Screenshots
+
+### Landing Page
+The public-facing landing page introduces Vanguard AI with a hero section, feature highlights, and call-to-action buttons.
+
+![Landing Page](docs/screenshots/landing-page.png)
+
+### Authentication
+Secure email/password authentication with tabbed Sign In and Create Account forms.
+
+![Authentication](docs/screenshots/auth-page.png)
+
+### Dashboard
+The main dashboard provides a personalized welcome, aggregate statistics across all repositories, recent repository activity, quick actions, and an overview of how Vanguard AI works.
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+### Repositories
+A dedicated page to browse, search, and manage all tracked GitHub repositories with filtering and quick access.
+
+![Repositories](docs/screenshots/repositories.png)
+
+### Repository Analysis
+Detailed scan results for each repository showing overall health, security, technical debt, and documentation scores with radial chart visualizations and tabbed exploration.
+
+![Repository Analysis](docs/screenshots/repo-analysis.png)
+
+### Code Diff Viewer
+Side-by-side view of original code and AI-suggested improvements with syntax highlighting, file-level scores, and identified issues.
+
+![Code Diff Viewer](docs/screenshots/code-diff.png)
+
 ## System Architecture
 
 ### Frontend Architecture
