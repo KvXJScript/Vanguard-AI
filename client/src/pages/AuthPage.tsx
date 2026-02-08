@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Code2, Loader2, AlertCircle } from "lucide-react";
 
 export default function AuthPage() {
+  const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
+
+  if (isAuthenticated) {
+    setLocation("/dashboard");
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl pointer-events-none overflow-hidden">
@@ -48,6 +57,7 @@ export default function AuthPage() {
 
 function LoginForm() {
   const { login, isLoggingIn, loginError } = useAuth();
+  const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -55,6 +65,7 @@ function LoginForm() {
     e.preventDefault();
     try {
       await login({ email, password });
+      setLocation("/dashboard");
     } catch {}
   };
 
@@ -102,6 +113,7 @@ function LoginForm() {
 
 function RegisterForm() {
   const { register, isRegistering, registerError } = useAuth();
+  const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -110,6 +122,7 @@ function RegisterForm() {
     e.preventDefault();
     try {
       await register({ email, password, firstName: firstName || undefined });
+      setLocation("/dashboard");
     } catch {}
   };
 

@@ -9,7 +9,7 @@ export function Sidebar() {
   const { logout, user } = useAuth();
 
   const navItems = [
-    { href: "/", icon: LayoutDashboard, label: "Dashboard" },
+    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/repos", icon: GitBranch, label: "Repositories" },
   ];
 

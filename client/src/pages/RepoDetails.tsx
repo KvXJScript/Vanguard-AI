@@ -38,7 +38,7 @@ export default function RepoDetails() {
 
   const handleDelete = () => {
     if (confirm("Are you sure you want to delete this repository?")) {
-      deleteRepo(id, { onSuccess: () => setLocation("/") });
+      deleteRepo(id, { onSuccess: () => setLocation("/dashboard") });
     }
   };
 
@@ -365,7 +365,7 @@ function NotFoundState() {
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Repository Not Found</h2>
           <Button asChild variant="ghost" size="sm">
-            <a href="/">Return Dashboard</a>
+            <a href="/dashboard">Return Dashboard</a>
           </Button>
         </div>
       </main>

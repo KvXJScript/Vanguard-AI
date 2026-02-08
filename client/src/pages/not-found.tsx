@@ -18,7 +18,7 @@ export default function NotFound() {
 
           <div className="mt-8 flex justify-end">
              <Button asChild>
-               <Link href="/">Return Home</Link>
+               <Link href="/">Return to Home</Link>
              </Button>
           </div>
         </CardContent>
