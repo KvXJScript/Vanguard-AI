@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import LandingPage from "@/pages/LandingPage";
 import AuthPage from "@/pages/AuthPage";
 import Dashboard from "@/pages/Dashboard";
+import Repositories from "@/pages/Repositories";
 import RepoDetails from "@/pages/RepoDetails";
 import ScanDetails from "@/pages/ScanDetails";
 import NotFound from "@/pages/not-found";
@@ -40,7 +41,7 @@ function Router() {
         <ProtectedRoute component={Dashboard} />
       </Route>
       <Route path="/repos">
-        <ProtectedRoute component={Dashboard} />
+        <ProtectedRoute component={Repositories} />
       </Route>
       <Route path="/repo/:id">
         <ProtectedRoute component={RepoDetails} />
