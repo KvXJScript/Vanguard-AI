@@ -2,30 +2,23 @@ import pLimit from "p-limit";
 import pRetry, { AbortError } from "p-retry";
 
 /**
- * Batch Processing Utilities for Anthropic
+ * Batch Processing Utilities for AI API calls
  *
- * Supported models: claude-opus-4-5 (most capable), claude-sonnet-4-5 (balanced), claude-haiku-4-5 (fastest)
+ * Supports Google Gemini models (gemini-2.5-flash, gemini-2.5-pro)
  *
  * USAGE:
  * ```typescript
  * import { batchProcess } from "./replit_integrations/batch";
- * import Anthropic from "@anthropic-ai/sdk";
+ * import { GoogleGenerativeAI } from "@google/generative-ai";
  *
- * const anthropic = new Anthropic({
- *   apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
- *   baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
- * });
+ * const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+ * const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
  *
  * const results = await batchProcess(
  *   items,
  *   async (item) => {
- *     const message = await anthropic.messages.create({
- *       model: "claude-sonnet-4-5",
- *       max_tokens: 8192,
- *       messages: [{ role: "user", content: `Process: ${item.name}` }],
- *     });
- *     const content = message.content[0];
- *     return content.type === "text" ? content.text : "";
+ *     const result = await model.generateContent(`Process: ${item.name}`);
+ *     return result.response.text();
  *   }
  * );
  * ```

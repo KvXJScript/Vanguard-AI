@@ -1,6 +1,6 @@
 # Deploying Vanguard AI to Railway
 
-Complete guide to deploy the full Vanguard AI code intelligence platform (frontend, backend, PostgreSQL database, and Anthropic AI integration) to Railway.
+Complete guide to deploy the full Vanguard AI code intelligence platform (frontend, backend, PostgreSQL database, and Google Gemini AI integration) to Railway.
 
 ---
 
@@ -11,7 +11,7 @@ Complete guide to deploy the full Vanguard AI code intelligence platform (fronte
 | **Frontend** | React SPA served as static files from the Express server |
 | **Backend** | Express.js API handling auth, GitHub scanning, AI analysis |
 | **Database** | PostgreSQL storing users, sessions, repos, scans, file analyses |
-| **AI Integration** | Anthropic Claude API for code analysis (requires your API key) |
+| **AI Integration** | Google Gemini API for code analysis (free API key from aistudio.google.com) |
 
 The application is packaged as a single Docker container. The Express server serves both the API and the frontend on one port.
 
@@ -23,7 +23,7 @@ Before you begin, make sure you have:
 
 1. **A Railway account** - Sign up at [railway.app](https://railway.app) (free trial available, then $5/month Hobby plan for persistent hosting)
 2. **A GitHub account** - Your code needs to be in a GitHub repository
-3. **An Anthropic API key** - Get one from [console.anthropic.com](https://console.anthropic.com/) (needed for AI code analysis)
+3. **A Google Gemini API key** - Get one for free from [aistudio.google.com](https://aistudio.google.com/) (needed for AI code analysis)
 4. **Git installed** on your local machine (to push code)
 
 ---
@@ -97,7 +97,7 @@ Click on your **web service** (the one connected to GitHub), then go to the **"V
 
 | Variable | Value | How to Get It |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | `sk-ant-...` | Go to [console.anthropic.com](https://console.anthropic.com/) > API Keys > Create Key |
+| `GEMINI_API_KEY` | `AIza...` | Go to [aistudio.google.com](https://aistudio.google.com/) > Get API Key > Create Key (free) |
 | `SESSION_SECRET` | A random 64-character string | Run `openssl rand -hex 32` in your terminal, or use any password generator |
 | `NODE_ENV` | `production` | Type exactly: `production` |
 
@@ -215,7 +215,7 @@ Express Server (single container)
     │   ├── Export: /api/scans/:id/export (HTML report)
     │   ├── Stats: /api/stats (dashboard metrics)
     │   └── Health: /api/health (uptime monitoring)
-    ├── Anthropic API (AI code analysis)
+    ├── Google Gemini API (AI code analysis)
     └── PostgreSQL Database (Railway-managed)
 ```
 
@@ -234,7 +234,7 @@ Express Server (single container)
 | Variable | Required | Description | Example |
 |---|---|---|---|
 | `DATABASE_URL` | Yes (auto) | PostgreSQL connection string | `postgresql://user:pass@host:5432/db` |
-| `ANTHROPIC_API_KEY` | Yes | Anthropic API key for Claude AI | `sk-ant-api03-...` |
+| `GEMINI_API_KEY` | Yes | Google Gemini API key (free) | `AIza...` |
 | `SESSION_SECRET` | Yes | Secret for encrypting session cookies | `a1b2c3d4e5f6...` (64+ chars) |
 | `NODE_ENV` | Yes | Must be `production` | `production` |
 | `PORT` | Auto | Server port (Railway sets this) | `3000` |
@@ -285,9 +285,9 @@ You can also trigger a manual redeploy from the **"Deployments"** tab.
 
 ### "AI analysis failed" or scans show all zeros
 
-- Verify `ANTHROPIC_API_KEY` is set correctly (no extra spaces, correct key)
-- Check your Anthropic account has available credits at [console.anthropic.com](https://console.anthropic.com/)
-- Check deploy logs for specific error messages from the Anthropic API
+- Verify `GEMINI_API_KEY` is set correctly (no extra spaces, correct key)
+- Get a free API key at [aistudio.google.com](https://aistudio.google.com/) if you don't have one
+- Check deploy logs for specific error messages from the Gemini API
 
 ### "Login not working" or "Session not persisting"
 
@@ -330,7 +330,7 @@ Railway pricing (as of 2025):
 
 The free trial gives you $5 of credits to test with. For production use, the Hobby plan ($5/month) is required to keep your app running 24/7.
 
-Anthropic API costs are separate and depend on how many scans you run (~$0.01-0.05 per file analyzed).
+Google Gemini API has a generous free tier. For most usage, there is no additional cost for AI analysis.
 
 ---
 

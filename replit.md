@@ -29,7 +29,7 @@ Creator/Brand: Vanguard AI (must appear in all branding, footers, and UI referen
 - **Framework**: Express.js running on Node with TypeScript (executed via `tsx`)
 - **API Pattern**: RESTful JSON API under `/api/` prefix. Route contracts are defined in `shared/routes.ts` using Zod schemas.
 - **Authentication**: Standalone email/password auth with bcrypt password hashing. Sessions stored in PostgreSQL using `connect-pg-simple`. Auth module at `server/auth.ts` provides register/login/logout endpoints and `isAuthenticated` middleware.
-- **AI Integration**: Anthropic Claude API (claude-sonnet-4-5) for code analysis. The AI module (`server/lib/ai.ts`) sends code files to Claude and receives structured JSON with scores, issues, and refactored code suggestions.
+- **AI Integration**: Google Gemini API (gemini-2.5-flash) for code analysis. The AI module (`server/lib/ai.ts`) sends code files to Gemini and receives structured JSON with scores, issues, and refactored code suggestions.
 - **GitHub Integration**: `server/lib/github.ts` fetches repository file trees and content from the GitHub API (public repos only). Filters for relevant code file extensions and ignores build artifacts.
 - **GitHub Pages Export**: `server/lib/github-pages.ts` generates standalone HTML reports from scan data that can be deployed to GitHub Pages.
 - **Batch Processing**: `server/replit_integrations/batch/` provides concurrency-limited, retry-capable batch processing for AI API calls.
@@ -53,8 +53,7 @@ Creator/Brand: Vanguard AI (must appear in all branding, footers, and UI referen
 ### Key Environment Variables
 - `DATABASE_URL` - PostgreSQL connection string (required)
 - `SESSION_SECRET` - Express session secret (defaults to dev secret)
-- `AI_INTEGRATIONS_ANTHROPIC_API_KEY` - Anthropic API key
-- `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` - Anthropic API base URL
+- `GEMINI_API_KEY` - Google Gemini API key (free from aistudio.google.com)
 
 ### GitHub Pages Deployment
 - **Static Build**: `npx vite build --config vite.config.gh-pages.ts` outputs to `docs/` directory
@@ -82,3 +81,4 @@ Creator/Brand: Vanguard AI (must appear in all branding, footers, and UI referen
 - Increased scan file limit from 5 to 10 files per repository
 - Added comprehensive data-testid attributes to all interactive and dynamic elements
 - Fixed placeholder data (removed Math.random() issue count)
+- Switched AI provider from Anthropic Claude to Google Gemini (free API key available)
