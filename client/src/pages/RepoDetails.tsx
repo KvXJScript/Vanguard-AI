@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Play, Trash2, Github, ExternalLink, Calendar, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
+import { Loader2, Play, Trash2, Github, ExternalLink, Calendar, CheckCircle2, AlertTriangle, XCircle, Download } from "lucide-react";
 import { format } from "date-fns";
 import { MetricCard } from "@/components/MetricCard";
 import { RadialBarChart, RadialBar, Legend, ResponsiveContainer, Tooltip } from "recharts";
@@ -182,6 +182,9 @@ export default function RepoDetails() {
                              <span className="text-sm font-bold block">{scan.overallScore ?? "--"}</span>
                              <span className="text-[10px] text-muted-foreground uppercase">Score</span>
                            </div>
+                           <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); window.open(`/api/scans/${scan.id}/export`, "_blank"); }} data-testid={`button-export-scan-${scan.id}`}>
+                             <Download className="w-4 h-4" />
+                           </Button>
                            <Button asChild size="sm" variant="ghost">
                              <a href={`/scan/${scan.id}`}>Details</a>
                            </Button>

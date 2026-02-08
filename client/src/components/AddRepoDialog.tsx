@@ -36,7 +36,7 @@ export function AddRepoDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all">
+        <Button className="gap-2 shadow-lg shadow-primary/20" data-testid="button-add-repo">
           <Plus className="w-4 h-4" /> Add Repository
         </Button>
       </DialogTrigger>
@@ -59,15 +59,16 @@ export function AddRepoDialog() {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 disabled={isPending}
+                data-testid="input-repo-url"
               />
             </div>
             {error && <p className="text-xs text-destructive mt-1">{error}</p>}
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={isPending}>
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)} disabled={isPending} data-testid="button-cancel-add">
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending} data-testid="button-submit-repo">
               {isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Adding...

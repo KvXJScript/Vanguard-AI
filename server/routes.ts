@@ -7,6 +7,7 @@ import { setupAuth, isAuthenticated, registerAuthRoutes } from "./replit_integra
 import { fetchRepoTree, fetchFileContent } from "./lib/github";
 import { analyzeCode } from "./lib/ai";
 import { batchProcess } from "./replit_integrations/batch/utils";
+import { generateGitHubPagesReport } from "./lib/github-pages";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -157,6 +158,26 @@ export async function registerRoutes(
     
     const files = await storage.getFileAnalyses(scan.id);
     res.json({ scan, files });
+  });
+
+  app.get("/api/scans/:id/export", isAuthenticated, async (req, res) => {
+    try {
+      const scan = await storage.getScan(Number(req.params.id));
+      if (!scan) return res.status(404).json({ message: "Scan not found" });
+
+      const repo = await storage.getRepository(scan.repoId);
+      if (!repo) return res.status(404).json({ message: "Repository not found" });
+
+      const files = await storage.getFileAnalyses(scan.id);
+      const html = generateGitHubPagesReport({ repo, scan, files });
+
+      res.setHeader("Content-Type", "text/html");
+      res.setHeader("Content-Disposition", `attachment; filename="kvx-report-${repo.owner}-${repo.name}-scan-${scan.id}.html"`);
+      res.send(html);
+    } catch (error: any) {
+      console.error("Export failed:", error);
+      res.status(500).json({ message: "Failed to generate report" });
+    }
   });
 
   return httpServer;

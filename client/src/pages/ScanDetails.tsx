@@ -7,9 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { CodeDiffViewer } from "@/components/CodeDiffViewer";
-import { ChevronLeft, FileText, AlertCircle, Shield, Book, Check } from "lucide-react";
+import { ChevronLeft, FileText, AlertCircle, Shield, Book, Check, Lightbulb, Download } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+
+function handleExport(scanId: number) {
+  window.open(`/api/scans/${scanId}/export`, "_blank");
+}
 
 export default function ScanDetails() {
   const [match, params] = useRoute("/scan/:id");
@@ -41,11 +45,16 @@ export default function ScanDetails() {
               <p className="text-sm text-muted-foreground">Analyzed {files.length} files</p>
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 flex-wrap">
              <ScoreBlock label="Overall" score={scan.overallScore} />
              <div className="w-px h-8 bg-border" />
              <ScoreBlock label="Tech Debt" score={scan.technicalDebtScore} color="text-yellow-500" />
              <ScoreBlock label="Security" score={scan.securityScore} color="text-red-500" />
+             <div className="w-px h-8 bg-border" />
+             <Button variant="outline" size="sm" onClick={() => handleExport(scan.id)} data-testid="button-export-report">
+               <Download className="w-4 h-4 mr-2" />
+               Export for GitHub Pages
+             </Button>
           </div>
         </header>
 
@@ -147,8 +156,9 @@ function FileListItem({ file }: { file: any }) {
                         </div>
                         <p className="text-sm font-medium mb-2">{issue.description}</p>
                         {issue.suggestion && (
-                          <div className="text-xs text-muted-foreground bg-black/20 p-2 rounded">
-                            💡 {issue.suggestion}
+                          <div className="text-xs text-muted-foreground bg-black/20 p-2 rounded flex items-start gap-1.5">
+                            <Lightbulb className="w-3 h-3 mt-0.5 shrink-0 text-yellow-400" />
+                            <span>{issue.suggestion}</span>
                           </div>
                         )}
                      </Card>

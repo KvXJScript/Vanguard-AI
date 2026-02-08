@@ -16,9 +16,9 @@ export default function Dashboard() {
     <div className="flex min-h-screen bg-background">
       <Sidebar />
       <main className="flex-1 p-8 overflow-y-auto">
-        <header className="flex items-center justify-between mb-8">
+        <header className="flex items-center justify-between gap-4 mb-8 flex-wrap">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight" data-testid="text-dashboard-title">Dashboard</h1>
             <p className="text-muted-foreground mt-1">Overview of your tracked repositories.</p>
           </div>
           <AddRepoDialog />
@@ -61,8 +61,8 @@ function RepoCard({ repo }: { repo: any }) {
   // unless we join it. Let's assume we display basic info and click through.
   
   return (
-    <Link href={`/repo/${repo.id}`} className="block group">
-      <Card className="h-full p-6 border-white/5 bg-card/50 hover:bg-card hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 relative overflow-hidden">
+    <Link href={`/repo/${repo.id}`} className="block group" data-testid={`link-repo-${repo.id}`}>
+      <Card className="h-full p-6 border-white/5 bg-card/50 hover:bg-card hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 relative overflow-visible">
         <div className="flex justify-between items-start mb-4">
           <div className="p-2 bg-background rounded-lg border border-white/5">
             <GitBranch className="w-6 h-6 text-primary" />

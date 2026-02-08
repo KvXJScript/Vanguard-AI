@@ -20,11 +20,10 @@ const GITHUB_API_BASE = "https://api.github.com";
 export async function fetchRepoTree(owner: string, repo: string, branch = "main"): Promise<GitHubTreeItem[]> {
   // 1. Get the branch SHA to ensure we get the latest tree
   const branchRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/branches/${branch}`, {
-    headers: { "User-Agent": "Replit-Code-Health-Radar" }
+    headers: { "User-Agent": "KvX-Code-Intelligence" }
   });
   
   if (!branchRes.ok) {
-     // Try 'master' if 'main' fails
      if (branch === "main") return fetchRepoTree(owner, repo, "master");
      throw new Error(`Failed to fetch branch ${branch}: ${branchRes.statusText}`);
   }
@@ -32,9 +31,8 @@ export async function fetchRepoTree(owner: string, repo: string, branch = "main"
   const branchData = await branchRes.json();
   const treeSha = branchData.commit.commit.tree.sha;
 
-  // 2. Fetch the recursive tree
   const treeRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/git/trees/${treeSha}?recursive=1`, {
-    headers: { "User-Agent": "Replit-Code-Health-Radar" }
+    headers: { "User-Agent": "KvX-Code-Intelligence" }
   });
 
   if (!treeRes.ok) {
@@ -57,7 +55,7 @@ export async function fetchRepoTree(owner: string, repo: string, branch = "main"
 
 export async function fetchFileContent(url: string): Promise<string> {
   const res = await fetch(url, {
-    headers: { "User-Agent": "Replit-Code-Health-Radar" }
+    headers: { "User-Agent": "KvX-Code-Intelligence" }
   });
   
   if (!res.ok) {
