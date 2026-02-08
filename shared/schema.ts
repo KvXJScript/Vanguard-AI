@@ -110,3 +110,5 @@ export const createRepoRequestSchema = z.object({
 });
 
 export type CreateRepoRequest = z.infer<typeof createRepoRequestSchema>;
+
+export type CreateRepoInput = z.infer<typeof insertRepoSchema>;

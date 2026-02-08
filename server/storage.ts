@@ -30,7 +30,7 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   // === REPOS ===
-  async createRepository(repo: InsertRepository): Promise<Repository> {
+  async createRepository(repo: any): Promise<Repository> {
     const [newRepo] = await db.insert(repositories).values(repo).returning();
     return newRepo;
   }

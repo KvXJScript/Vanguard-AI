@@ -32,8 +32,8 @@ export async function registerRoutes(
         url: input.url,
         name,
         owner,
-        defaultBranch: "main" // Could fetch actual default, simplified for now
-      });
+        defaultBranch: "main" 
+      } as any);
 
       res.status(201).json(repo);
     } catch (err) {

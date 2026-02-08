@@ -218,7 +218,9 @@ function NotFoundState() {
       <main className="flex-1 p-8 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Repository Not Found</h2>
-          <Button asChild variant="link"><a href="/">Return Dashboard</a></Button>
+              <Button asChild variant="ghost" size="sm">
+                <a href="/">Return Dashboard</a>
+              </Button>
         </div>
       </main>
     </div>
