@@ -20,34 +20,18 @@ export interface AnalysisResult {
 }
 
 export async function analyzeCode(code: string, filename: string): Promise<AnalysisResult> {
-  const prompt = `
-You are an expert Senior Software Engineer and Security Auditor.
-Analyze the following code file ("${filename}") for:
-1. Technical Debt (complexity, code smells, bad practices)
-2. Security Vulnerabilities (injection, exposed secrets, unsafe patterns)
-3. Documentation Quality (comments, clarity)
+  const truncatedCode = code.slice(0, 6000);
+  const prompt = `Analyze this code file ("${filename}") for technical debt, security vulnerabilities, and documentation quality. Return ONLY a JSON object (no markdown):
+{"technicalDebtScore":0-100,"securityScore":0-100,"documentationScore":0-100,"issues":[{"type":"debt"|"security"|"doc","severity":"low"|"medium"|"high","line":0,"description":"...","suggestion":"..."}]}
+Keep issues to the top 5 most important. No refactoredCode field.
 
-Provide a JSON response with the following structure:
-{
-  "technicalDebtScore": 0-100 (higher is better/cleaner),
-  "securityScore": 0-100 (higher is safer),
-  "documentationScore": 0-100 (higher is better),
-  "issues": [
-    { "type": "debt"|"security"|"doc", "severity": "low"|"medium"|"high", "line": <number>, "description": "<text>", "suggestion": "<text>" }
-  ],
-  "refactoredCode": "<string with the full refactored code>"
-}
-
-Only return the JSON object. Do not wrap in markdown code blocks.
-
-CODE TO ANALYZE:
-${code.slice(0, 15000)} // Truncate to avoid context limits if huge
-`;
+CODE:
+${truncatedCode}`;
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
-      max_tokens: 4096,
+      model: "claude-haiku-4-5",
+      max_tokens: 1500,
       messages: [{ role: "user", content: prompt }],
     });
 

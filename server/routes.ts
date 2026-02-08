@@ -74,6 +74,12 @@ export async function registerRoutes(
     const repo = await storage.getRepository(repoId);
     if (!repo) return res.status(404).json({ message: "Repo not found" });
 
+    const existingScans = await storage.getScans(repoId);
+    const hasProcessing = existingScans.some(s => s.status === "processing");
+    if (hasProcessing) {
+      return res.status(409).json({ message: "A scan is already in progress for this repository." });
+    }
+
     const scan = await storage.createScan({
       repoId,
       status: "processing",
@@ -91,7 +97,7 @@ export async function registerRoutes(
         console.log(`Starting scan for ${repo.owner}/${repo.name}`);
         
         const tree = await fetchRepoTree(repo.owner, repo.name, repo.defaultBranch || "main");
-        const filesToAnalyze = tree.slice(0, 10);
+        const filesToAnalyze = tree.slice(0, 5);
 
         if (filesToAnalyze.length === 0) {
           await storage.updateScanStatus(scan.id, "failed", "No relevant code files found in this repository.");
@@ -122,7 +128,7 @@ export async function registerRoutes(
                 originalCode: content,
                 refactoredCode: analysis.refactoredCode
             });
-        }, { concurrency: 2 });
+        }, { concurrency: 5 });
 
         const avgDebt = Math.round(totalDebt / fileCount);
         const avgSec = Math.round(totalSecurity / fileCount);
